@@ -54,9 +54,10 @@ export async function apiRequest<T>(
         ...headers,
       },
     });
-  } catch {
+  } catch (error) {
+    const cause = error instanceof Error ? ` (${error.message})` : '';
     throw new Error(
-      'Cannot reach ELVA Investa. Confirm the API is running and EXPO_PUBLIC_API_URL points at this machine on the LAN, then restart Expo with -c.'
+      `Cannot reach ELVA Investa at ${url}${cause}. Confirm the phone and computer share Wi-Fi, the API is running, and TCP port 4000 is allowed.`
     );
   }
 

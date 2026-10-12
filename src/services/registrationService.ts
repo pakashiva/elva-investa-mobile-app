@@ -3,6 +3,7 @@ import { RegistrationFormValues } from '../types/registrationForm';
 import { CustomerPayload } from '../types/auth';
 import { normalizeMobileDigits } from '../utils/indianValidators';
 import { apiRequest } from '../lib/api';
+import { lookupClientCode } from './clientLookupService';
 import { persistSession, getStoredSession } from './sessionStore';
 import { saveMpin } from './mpinStore';
 import {
@@ -87,8 +88,13 @@ export async function beginRegistration(
   const mobileNumber = normalizeMobileDigits(form.mobileNumber);
   const emailAddress = form.emailAddress.trim().toLowerCase();
 
+  // Do not persist or advance to OTP until the selected trader is confirmed.
+  // Clear any earlier draft so an invalid attempt cannot be resumed by mistake.
+  await clearPendingRegistration();
+  await lookupClientCode(form.clientCode);
   await savePendingRegistration({
     ...form,
+    clientCode: form.clientCode.trim().toUpperCase(),
     mobileNumber,
     emailAddress,
   });
@@ -109,37 +115,53 @@ export async function completeRegistrationAfterOtp(
   const form = await loadPendingRegistration();
 
   if (form) {
-    const data = await apiRequest<{ token: string; customer: CustomerPayload }>(
-      '/api/mobile/auth/register',
-      {
+    let session = await getStoredSession();
+    const samePendingCustomer = Boolean(
+      session &&
+        session.customer.emailAddress.trim().toLowerCase() ===
+          form.emailAddress.trim().toLowerCase() &&
+        normalizeMobileDigits(session.customer.mobileNumber) ===
+          normalizeMobileDigits(form.mobileNumber) &&
+        session.customer.clientCode.trim().toUpperCase() ===
+          form.clientCode.trim().toUpperCase()
+    );
+
+    // If account creation succeeded but a later local step failed, resume with
+    // the stored session instead of POSTing /register a second time.
+    if (!session || !samePendingCustomer) {
+      const data = await apiRequest<{
+        token: string;
+        customer: CustomerPayload;
+      }>('/api/mobile/auth/register', {
         method: 'POST',
         auth: false,
         body: JSON.stringify(buildRegisterBody(form)),
-      }
-    );
+      });
 
-    await persistSession(data.token, {
-      ...data.customer,
-      mobileVerified: true,
-    });
+      session = await persistSession(data.token, data.customer);
+    }
 
-    const verified = await apiRequest<{ customer: CustomerPayload }>(
-      '/api/mobile/auth/verify-mobile',
-      { method: 'POST' }
-    );
-    await persistSession(data.token, {
-      ...(verified.customer ?? data.customer),
-      mobileVerified: true,
-    });
+    if (!session) {
+      throw new Error('Could not restore your registration. Please try again.');
+    }
 
     await saveMpin({
-      customerId: data.customer.id,
+      customerId: session.customer.id,
       email: form.emailAddress,
       mpin: form.mpin,
     });
     await clearPendingRegistration();
 
-    return { userId: data.customer.id };
+    const verified = await apiRequest<{ customer: CustomerPayload }>(
+      '/api/mobile/auth/verify-mobile',
+      { method: 'POST' }
+    );
+    await persistSession(session.access_token, {
+      ...(verified.customer ?? session.customer),
+      mobileVerified: true,
+    });
+
+    return { userId: session.customer.id };
   }
 
   const session = await getStoredSession();
@@ -159,8 +181,6 @@ export async function completeRegistrationAfterOtp(
 
   return { userId: session.customer.id };
 }
-
-
 
 
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ import {
 } from '../../data/registrationForm';
 import PasswordInput from '../../components/auth/PasswordInput';
 import { beginRegistration } from '../../services/registrationService';
+import { ApiError } from '../../lib/api';
 import { lookupClientCode } from '../../services/clientLookupService';
 import { useAuth } from '../../contexts/AuthContext';
 import { detectBankNameFromIfsc } from '../../utils/bankName';
@@ -41,6 +42,25 @@ import {
 
 type Props = RootStackScreenProps<'CreateAccount'>;
 
+function digitsUpTo(value: string, maxLength: number): string {
+  return value.replace(/\D/g, '').slice(0, maxLength);
+}
+
+function mobileDigitsUpToTen(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  const localDigits =
+    digits.length === 12 && digits.startsWith('91')
+      ? digits.slice(2)
+      : digits.length === 11 && digits.startsWith('0')
+        ? digits.slice(1)
+        : digits;
+  return localDigits.slice(0, 10);
+}
+
+function identifierUpTo(value: string, maxLength: number): string {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, maxLength);
+}
+
 export default function CreateAccountScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const {
@@ -53,11 +73,13 @@ export default function CreateAccountScreen({ navigation }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clientName, setClientName] = useState<string | null>(null);
   const [isLookingUpClient, setIsLookingUpClient] = useState(false);
+  const submitLock = useRef(false);
 
   useEffect(() => {
     const code = form.clientCode.trim().toUpperCase();
     if (!/^[A-Z0-9]{3,20}$/.test(code)) {
       setClientName(null);
+      setIsLookingUpClient(false);
       return;
     }
 
@@ -110,6 +132,9 @@ export default function CreateAccountScreen({ navigation }: Props) {
     key: K,
     value: (typeof form)[K]
   ) => {
+    if (isSubmitting) {
+      return;
+    }
     setForm((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) {
       setErrors((prev) => {
@@ -121,6 +146,10 @@ export default function CreateAccountScreen({ navigation }: Props) {
   };
 
   const handleSubmit = async () => {
+    if (submitLock.current) {
+      return;
+    }
+
     const nextErrors = validateRegistrationForm(form);
     setErrors(nextErrors);
 
@@ -132,12 +161,13 @@ export default function CreateAccountScreen({ navigation }: Props) {
       return;
     }
 
+    submitLock.current = true;
     setIsSubmitting(true);
-    setBypassMobileVerification(false);
-    setOtpFlow('registration');
 
     try {
       const result = await beginRegistration(form);
+      setBypassMobileVerification(false);
+      setOtpFlow('registration');
       navigation.replace('VerifyMobileNumber', {
         mode: 'registration',
         sendOtp: true,
@@ -149,8 +179,15 @@ export default function CreateAccountScreen({ navigation }: Props) {
         error instanceof Error
           ? error.message
           : 'Registration failed. Please try again.';
+      if (
+        error instanceof ApiError &&
+        [400, 403, 404].includes(error.status)
+      ) {
+        setErrors((previous) => ({ ...previous, clientCode: message }));
+      }
       Alert.alert('Registration failed', message);
     } finally {
+      submitLock.current = false;
       setIsSubmitting(false);
     }
   };
@@ -224,7 +261,9 @@ export default function CreateAccountScreen({ navigation }: Props) {
             label="Mobile Number"
             required
             value={form.mobileNumber}
-            onChangeText={(text) => updateField('mobileNumber', text)}
+            onChangeText={(text) =>
+              updateField('mobileNumber', mobileDigitsUpToTen(text))
+            }
             error={errors.mobileNumber}
             keyboardType="phone-pad"
           />
@@ -264,7 +303,9 @@ export default function CreateAccountScreen({ navigation }: Props) {
             label="Aadhaar Card Number"
             required
             value={form.aadhaarNumber}
-            onChangeText={(text) => updateField('aadhaarNumber', text)}
+            onChangeText={(text) =>
+              updateField('aadhaarNumber', digitsUpTo(text, 12))
+            }
             error={errors.aadhaarNumber}
             keyboardType="number-pad"
           />
@@ -273,7 +314,9 @@ export default function CreateAccountScreen({ navigation }: Props) {
             label="PAN Card Number"
             required
             value={form.panNumber}
-            onChangeText={(text) => updateField('panNumber', text.toUpperCase())}
+            onChangeText={(text) =>
+              updateField('panNumber', identifierUpTo(text, 10))
+            }
             error={errors.panNumber}
             autoCapitalize="characters"
           />
@@ -297,7 +340,7 @@ export default function CreateAccountScreen({ navigation }: Props) {
             required
             value={form.accountNumber}
             onChangeText={(text) =>
-              updateField('accountNumber', text.replace(/[^\d]/g, ''))
+              updateField('accountNumber', digitsUpTo(text, 18))
             }
             error={errors.accountNumber}
             keyboardType="number-pad"
@@ -307,7 +350,7 @@ export default function CreateAccountScreen({ navigation }: Props) {
             required
             value={form.confirmAccountNumber}
             onChangeText={(text) =>
-              updateField('confirmAccountNumber', text.replace(/[^\d]/g, ''))
+              updateField('confirmAccountNumber', digitsUpTo(text, 18))
             }
             error={errors.confirmAccountNumber}
             keyboardType="number-pad"
@@ -317,7 +360,10 @@ export default function CreateAccountScreen({ navigation }: Props) {
             required
             value={form.ifscCode}
             onChangeText={(text) => {
-              const nextIfsc = text.toUpperCase();
+              if (isSubmitting) {
+                return;
+              }
+              const nextIfsc = identifierUpTo(text, 11);
               const detectedBank = detectBankNameFromIfsc(nextIfsc);
               setForm((prev) => ({
                 ...prev,
@@ -398,7 +444,9 @@ export default function CreateAccountScreen({ navigation }: Props) {
             label="Nominee Aadhaar Number"
             required
             value={form.nomineeAadhaar}
-            onChangeText={(text) => updateField('nomineeAadhaar', text)}
+            onChangeText={(text) =>
+              updateField('nomineeAadhaar', digitsUpTo(text, 12))
+            }
             error={errors.nomineeAadhaar}
             keyboardType="number-pad"
           />
@@ -406,7 +454,9 @@ export default function CreateAccountScreen({ navigation }: Props) {
             label="Nominee's Mobile"
             required
             value={form.nomineeMobile}
-            onChangeText={(text) => updateField('nomineeMobile', text)}
+            onChangeText={(text) =>
+              updateField('nomineeMobile', mobileDigitsUpToTen(text))
+            }
             error={errors.nomineeMobile}
             keyboardType="phone-pad"
           />
@@ -415,7 +465,7 @@ export default function CreateAccountScreen({ navigation }: Props) {
             required
             value={form.nomineePan}
             onChangeText={(text) =>
-              updateField('nomineePan', text.toUpperCase())
+              updateField('nomineePan', identifierUpTo(text, 10))
             }
             error={errors.nomineePan}
             autoCapitalize="characters"

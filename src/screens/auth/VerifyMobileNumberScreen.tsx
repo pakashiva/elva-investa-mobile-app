@@ -34,6 +34,7 @@ import {
   markMobileVerified,
 } from '../../services/profileService';
 import { completeRegistrationAfterOtp } from '../../services/registrationService';
+import { ApiError } from '../../lib/api';
 import { loadPendingRegistration } from '../../services/registrationPendingStore';
 import { RootStackScreenProps } from '../../navigation/types';
 import { OtpMode } from '../../types/otp';
@@ -383,8 +384,13 @@ export default function VerifyMobileNumberScreen({ navigation, route }: Props) {
       const message =
         error instanceof Error ? error.message : 'OTP verification failed.';
       if (otpAlreadyConsumed && isRegistrationFlow) {
+        const permanentRegistrationError =
+          error instanceof ApiError &&
+          [400, 403, 409, 422].includes(error.status);
         setErrorMessage(
-          `${message}\n\nYour OTP was already accepted. Tap Verify OTP again to finish saving your account — no new code needed.`
+          permanentRegistrationError
+            ? `${message}\n\nYour OTP was accepted, but these registration details were rejected. Go back, correct them, and request a new OTP.`
+            : `${message}\n\nYour OTP was already accepted. Tap Verify OTP again to finish saving your account — no new code needed.`
         );
       } else {
         setErrorMessage(message);
