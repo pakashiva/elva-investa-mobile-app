@@ -1,6 +1,6 @@
 module.exports = {
   expo: {
-    name: 'ELVA Investa',
+    name: 'ELVA CAPITA',
     slug: 'elva-investa-mobile',
     owner: 'pakashiva',
     version: '1.0.1',

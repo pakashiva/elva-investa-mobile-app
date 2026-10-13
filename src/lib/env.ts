@@ -56,7 +56,7 @@ function isReleaseBuild(): boolean {
   return (
     execution === 'standalone' ||
     execution === 'bare' ||
-    Constants.appOwnership === 'standalone'
+    String(Constants.appOwnership) === 'standalone'
   );
 }
 

@@ -8,6 +8,7 @@ export type DocumentUploadValue = {
 
 export type RegistrationFormValues = {
   clientCode: string;
+  customerType: 'investor' | 'borrower' | 'both';
   fullName: string;
   mobileNumber: string;
   emailAddress: string;

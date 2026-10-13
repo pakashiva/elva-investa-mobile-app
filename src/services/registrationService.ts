@@ -53,6 +53,7 @@ function buildRegisterBody(form: RegistrationFormValues) {
 
   return {
     clientCode: form.clientCode.trim().toUpperCase(),
+    customerType: form.customerType,
     fullName: form.fullName.trim(),
     emailAddress,
     mobileNumber,

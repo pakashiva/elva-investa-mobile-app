@@ -18,8 +18,8 @@ export type NotificationToastPayload = {
   id: string;
   title: string;
   body: string;
-  decision: 'approved' | 'rejected';
-  kind: 'investment' | 'withdrawal' | 'agreement_renewal';
+  decision: 'approved' | 'rejected' | 'recorded' | 'due' | 'overdue';
+  kind: 'investment' | 'withdrawal' | 'agreement_renewal' | 'loan';
 };
 
 type Props = {
@@ -95,7 +95,7 @@ export default function NotificationToastBanner({
     return null;
   }
 
-  const approved = toast.decision === 'approved';
+  const approved = toast.decision !== 'rejected';
 
   return (
     <Modal

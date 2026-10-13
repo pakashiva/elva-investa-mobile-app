@@ -10,6 +10,7 @@ import EarningsScreen from '../screens/more/EarningsScreen';
 import ReferEarnScreen from '../screens/more/ReferEarnScreen';
 import MyProfileScreen from '../screens/more/MyProfileScreen';
 import SettingsScreen from '../screens/more/SettingsScreen';
+import AccountCapabilitiesScreen from '../screens/more/AccountCapabilitiesScreen';
 import TransactionsScreen from '../screens/more/TransactionsScreen';
 import FaqScreen from '../screens/more/FaqScreen';
 import HelpSupportScreen from '../screens/more/HelpSupportScreen';
@@ -65,6 +66,11 @@ export default function MoreStackNavigator() {
       <Stack.Screen
         name="Settings"
         component={SettingsScreen}
+        options={{ animation: 'slide_from_right' }}
+      />
+      <Stack.Screen
+        name="AccountCapabilities"
+        component={AccountCapabilitiesScreen}
         options={{ animation: 'slide_from_right' }}
       />
       <Stack.Screen

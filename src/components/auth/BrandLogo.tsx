@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Image, ImageStyle, StyleProp } from 'react-native';
-import { BRAND_LOGO } from '../../constants/brandAssets';
+import { BRAND_LOGO, BRAND_NAME } from '../../constants/brandAssets';
 
 type Props = {
   size?: number;
@@ -17,12 +17,12 @@ export default function BrandLogo({ size = 96, imageStyle }: Props) {
           {
             width: size,
             height: size,
-            borderRadius: Math.round(size * 0.18),
+            borderRadius: Math.round(size * 0.12),
           },
           imageStyle,
         ]}
         resizeMode="contain"
-        accessibilityLabel="ELVA Investa logo"
+        accessibilityLabel={`${BRAND_NAME} logo`}
       />
     </View>
   );

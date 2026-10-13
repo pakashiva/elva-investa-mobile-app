@@ -13,6 +13,7 @@ export const RELATIONSHIP_OPTIONS = [
 
 export const REGISTRATION_FORM_DEFAULTS: RegistrationFormValues = {
   clientCode: '',
+  customerType: 'investor',
   fullName: '',
   mobileNumber: '',
   emailAddress: '',
@@ -46,7 +47,7 @@ export const REGISTRATION_MPIN_HINT =
   'Enter a 4-digit MPIN. You will use this to unlock the app on this device.';
 
 export const REGISTRATION_AUTHORIZATION_TEXT =
-  'I agree to the Terms & Conditions and authorize ELVA Investa to conduct secure digital KYC verification using my Aadhaar and PAN details.';
+  'I agree to the Terms & Conditions and authorize ELVA CAPITA to conduct secure digital KYC verification using my Aadhaar and PAN details.';
 
 export const REGISTRATION_SECURITY_TEXT =
   'SEBI & RBI compliant bank-grade encryption protocols protect your private data.';

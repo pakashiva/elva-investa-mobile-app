@@ -57,7 +57,7 @@ export async function apiRequest<T>(
   } catch (error) {
     const cause = error instanceof Error ? ` (${error.message})` : '';
     throw new Error(
-      `Cannot reach ELVA Investa at ${url}${cause}. Confirm the phone and computer share Wi-Fi, the API is running, and TCP port 4000 is allowed.`
+      `Cannot reach ELVA CAPITA at ${url}${cause}. Confirm the phone and computer share Wi-Fi, the API is running, and TCP port 4000 is allowed.`
     );
   }
 

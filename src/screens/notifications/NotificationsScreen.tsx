@@ -38,11 +38,12 @@ function formatNotificationTime(iso: string): string {
 function kindLabel(kind: InvestorNotification['kind']): string {
   if (kind === 'withdrawal') return 'Withdrawal';
   if (kind === 'agreement_renewal') return 'Renewal';
+  if (kind === 'loan') return 'Loan';
   return 'Investment';
 }
 
 function NotificationIcon({ item }: { item: InvestorNotification }) {
-  const approved = item.decision === 'approved';
+  const approved = item.decision !== 'rejected';
   const iconName =
     item.kind === 'withdrawal'
       ? approved
@@ -52,7 +53,7 @@ function NotificationIcon({ item }: { item: InvestorNotification }) {
         ? approved
           ? 'refresh-circle'
           : 'close-circle'
-        : approved
+        : item.kind === 'loan' ? approved ? 'business' : 'close-circle' : approved
           ? 'checkmark-circle'
           : 'close-circle';
 
@@ -196,7 +197,7 @@ export default function NotificationsScreen({ navigation }: Props) {
                         ? styles.kindChipWithdrawal
                         : item.kind === 'agreement_renewal'
                           ? styles.kindChipRenewal
-                          : styles.kindChipInvestment,
+                          : item.kind === 'loan' ? styles.kindChipRenewal : styles.kindChipInvestment,
                     ]}
                   >
                     <Text style={styles.kindChipText}>

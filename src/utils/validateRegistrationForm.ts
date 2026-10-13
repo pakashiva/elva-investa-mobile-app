@@ -48,67 +48,68 @@ export function validateRegistrationForm(
   if (isEmpty(values.dateOfBirth)) errors.dateOfBirth = 'Date of birth is required';
   if (isEmpty(values.address)) errors.address = 'Full address is required';
 
+  const includesInvest = values.customerType === 'investor' || values.customerType === 'both';
   if (isEmpty(values.aadhaarNumber)) {
     errors.aadhaarNumber = 'Aadhaar card number is required';
-  } else {
+  } else if (values.aadhaarNumber) {
     const aadhaarError = validateAadhaarNumber(values.aadhaarNumber);
     if (aadhaarError) errors.aadhaarNumber = aadhaarError;
   }
 
   if (isEmpty(values.panNumber)) {
     errors.panNumber = 'PAN card number is required';
-  } else {
+  } else if (values.panNumber) {
     const panError = validatePanNumber(values.panNumber);
     if (panError) errors.panNumber = panError;
   }
 
-  if (isEmpty(values.accountHolderName)) {
+  if (includesInvest && isEmpty(values.accountHolderName)) {
     errors.accountHolderName = 'Account holder name is required';
   }
 
-  if (isEmpty(values.accountNumber)) {
+  if (includesInvest && isEmpty(values.accountNumber)) {
     errors.accountNumber = 'Account number is required';
-  } else {
+  } else if (values.accountNumber) {
     const accountError = validateBankAccountNumber(values.accountNumber);
     if (accountError) errors.accountNumber = accountError;
   }
 
-  if (isEmpty(values.confirmAccountNumber)) {
+  if (includesInvest && isEmpty(values.confirmAccountNumber)) {
     errors.confirmAccountNumber = 'Please confirm your account number';
-  } else if (values.accountNumber !== values.confirmAccountNumber) {
+  } else if (includesInvest && values.accountNumber !== values.confirmAccountNumber) {
     errors.confirmAccountNumber = 'Account numbers do not match';
   }
 
-  if (isEmpty(values.ifscCode)) {
+  if (includesInvest && isEmpty(values.ifscCode)) {
     errors.ifscCode = 'IFSC code is required';
-  } else {
+  } else if (values.ifscCode) {
     const ifscError = validateIfscCode(values.ifscCode);
     if (ifscError) errors.ifscCode = ifscError;
   }
 
-  if (isEmpty(values.bankName)) errors.bankName = 'Bank name is required';
-  if (isEmpty(values.branchName)) errors.branchName = 'Branch name is required';
+  if (includesInvest && isEmpty(values.bankName)) errors.bankName = 'Bank name is required';
+  if (includesInvest && isEmpty(values.branchName)) errors.branchName = 'Branch name is required';
 
-  if (isEmpty(values.nomineeName)) errors.nomineeName = 'Nominee name is required';
-  if (isEmpty(values.relationship)) errors.relationship = 'Relationship is required';
+  if (includesInvest && isEmpty(values.nomineeName)) errors.nomineeName = 'Nominee name is required';
+  if (includesInvest && isEmpty(values.relationship)) errors.relationship = 'Relationship is required';
 
-  if (isEmpty(values.nomineeAadhaar)) {
+  if (includesInvest && isEmpty(values.nomineeAadhaar)) {
     errors.nomineeAadhaar = 'Nominee Aadhaar number is required';
-  } else {
+  } else if (values.nomineeAadhaar) {
     const nomineeAadhaarError = validateAadhaarNumber(values.nomineeAadhaar);
     if (nomineeAadhaarError) errors.nomineeAadhaar = nomineeAadhaarError;
   }
 
-  if (isEmpty(values.nomineeMobile)) {
+  if (includesInvest && isEmpty(values.nomineeMobile)) {
     errors.nomineeMobile = "Nominee's mobile number is required";
-  } else {
+  } else if (values.nomineeMobile) {
     const nomineeMobileError = validateIndianMobile(values.nomineeMobile);
     if (nomineeMobileError) errors.nomineeMobile = nomineeMobileError;
   }
 
-  if (isEmpty(values.nomineePan)) {
+  if (includesInvest && isEmpty(values.nomineePan)) {
     errors.nomineePan = "Nominee's PAN is required";
-  } else {
+  } else if (values.nomineePan) {
     const nomineePanError = validatePanNumber(values.nomineePan);
     if (nomineePanError) errors.nomineePan = nomineePanError;
   }

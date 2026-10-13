@@ -33,6 +33,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { detectBankNameFromIfsc } from '../../utils/bankName';
 import { RootStackScreenProps } from '../../navigation/types';
 import { RegistrationFormErrors } from '../../types/registrationForm';
+import { ClientLookup } from '../../services/clientLookupService';
 import { authColors } from '../../theme/authColors';
 import { colors, spacing } from '../../theme/colors';
 import {
@@ -72,11 +73,13 @@ export default function CreateAccountScreen({ navigation }: Props) {
   const [errors, setErrors] = useState<RegistrationFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clientName, setClientName] = useState<string | null>(null);
+  const [clientOptions, setClientOptions] = useState<ClientLookup | null>(null);
   const [isLookingUpClient, setIsLookingUpClient] = useState(false);
   const submitLock = useRef(false);
 
   useEffect(() => {
     const code = form.clientCode.trim().toUpperCase();
+    setClientOptions(null);
     if (!/^[A-Z0-9]{3,20}$/.test(code)) {
       setClientName(null);
       setIsLookingUpClient(false);
@@ -93,6 +96,14 @@ export default function CreateAccountScreen({ navigation }: Props) {
             return;
           }
           setClientName(client.name);
+          setClientOptions(client);
+          setForm((previous) => ({
+            ...previous,
+            customerType: (previous.customerType !== 'borrower' && client.enabledModules.includes('invest') || previous.customerType === 'borrower' && client.enabledModules.includes('borrow')) &&
+              (previous.customerType !== 'both' || client.enabledModules.includes('invest') && client.enabledModules.includes('borrow'))
+              ? previous.customerType
+              : client.enabledModules.includes('invest') ? 'investor' : 'borrower',
+          }));
           setErrors((prev) => {
             if (!prev.clientCode) {
               return prev;
@@ -107,6 +118,7 @@ export default function CreateAccountScreen({ navigation }: Props) {
             return;
           }
           setClientName(null);
+          setClientOptions(null);
           setErrors((prev) => ({
             ...prev,
             clientCode:
@@ -147,6 +159,11 @@ export default function CreateAccountScreen({ navigation }: Props) {
 
   const handleSubmit = async () => {
     if (submitLock.current) {
+      return;
+    }
+
+    if (!clientOptions || isLookingUpClient) {
+      setErrors((previous) => ({ ...previous, clientCode: 'Enter a valid client code and wait for it to be confirmed.' }));
       return;
     }
 
@@ -243,6 +260,26 @@ export default function CreateAccountScreen({ navigation }: Props) {
             <Text style={styles.helperText}>Joining {clientName}</Text>
           ) : null}
 
+          {clientOptions ? <>
+            <RegistrationSectionHeader
+              number={2}
+              title="Account type"
+              description="Choose which services you want to use. You can change this later in Settings."
+            />
+            <View style={styles.accountTypeOptions}>
+              {clientOptions.enabledModules.includes('invest') ? <TouchableOpacity style={[styles.accountTypeOption, form.customerType === 'investor' && styles.accountTypeSelected]} onPress={() => updateField('customerType', 'investor')}>
+                <Ionicons name={form.customerType === 'investor' ? 'radio-button-on' : 'radio-button-off'} size={19} color={form.customerType === 'investor' ? colors.primarySoft : colors.textMuted}/><View style={styles.accountTypeCopy}><Text style={styles.accountTypeTitle}>Invest</Text><Text style={styles.accountTypeHint}>Investor account and payouts</Text></View>
+              </TouchableOpacity> : null}
+              {clientOptions.enabledModules.includes('borrow') ? <TouchableOpacity style={[styles.accountTypeOption, form.customerType === 'borrower' && styles.accountTypeSelected]} onPress={() => updateField('customerType', 'borrower')}>
+                <Ionicons name={form.customerType === 'borrower' ? 'radio-button-on' : 'radio-button-off'} size={19} color={form.customerType === 'borrower' ? colors.primarySoft : colors.textMuted}/><View style={styles.accountTypeCopy}><Text style={styles.accountTypeTitle}>Borrow</Text><Text style={styles.accountTypeHint}>Apply for loans and track repayments</Text></View>
+              </TouchableOpacity> : null}
+              {clientOptions.enabledModules.includes('invest') && clientOptions.enabledModules.includes('borrow') ? <TouchableOpacity style={[styles.accountTypeOption, form.customerType === 'both' && styles.accountTypeSelected]} onPress={() => updateField('customerType', 'both')}>
+                <Ionicons name={form.customerType === 'both' ? 'radio-button-on' : 'radio-button-off'} size={19} color={form.customerType === 'both' ? colors.primarySoft : colors.textMuted}/><View style={styles.accountTypeCopy}><Text style={styles.accountTypeTitle}>Both</Text><Text style={styles.accountTypeHint}>Use investing and borrowing</Text></View>
+              </TouchableOpacity> : null}
+            </View>
+            {form.customerType !== 'investor' ? <Text style={styles.helperText}>Borrower accounts require Aadhaar and PAN for your client’s records. Loan amount and repayment choices are collected when you request a loan.</Text> : null}
+          </> : null}
+
           <RegistrationSectionHeader
             number={2}
             title="Personal Details"
@@ -293,10 +330,11 @@ export default function CreateAccountScreen({ navigation }: Props) {
             multiline
           />
 
+          <>
           <RegistrationSectionHeader
             number={3}
-            title="KYC Documents Verification"
-            description="Enter Aadhaar and PAN numbers for compliance"
+            title="Identity details"
+            description="Aadhaar and PAN are required for all account types and stored for your client."
           />
 
           <RegistrationTextField
@@ -320,7 +358,9 @@ export default function CreateAccountScreen({ navigation }: Props) {
             error={errors.panNumber}
             autoCapitalize="characters"
           />
+          </>
 
+          {form.customerType !== 'borrower' ? <>
           <RegistrationSectionHeader
             number={4}
             title="Bank Account Details"
@@ -413,6 +453,9 @@ export default function CreateAccountScreen({ navigation }: Props) {
             autoCapitalize="words"
           />
 
+          </> : null}
+
+          {form.customerType !== 'borrower' ? <>
           <RegistrationSectionHeader
             number={5}
             title="Nominee Details"
@@ -470,9 +513,10 @@ export default function CreateAccountScreen({ navigation }: Props) {
             error={errors.nomineePan}
             autoCapitalize="characters"
           />
+          </> : null}
 
           <RegistrationSectionHeader
-            number={6}
+            number={form.customerType === 'borrower' ? 5 : 6}
             title="Set Password & MPIN"
             description="Password for sign-in; MPIN to unlock the app on this device"
           />
@@ -639,6 +683,37 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: colors.successText,
     fontWeight: '600',
+  },
+  accountTypeOptions: {
+    gap: 9,
+    marginBottom: 18,
+  },
+  accountTypeOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+  },
+  accountTypeSelected: {
+    borderColor: colors.primarySoft,
+    backgroundColor: '#F7F5FF',
+  },
+  accountTypeCopy: {
+    flex: 1,
+  },
+  accountTypeTitle: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  accountTypeHint: {
+    marginTop: 2,
+    color: colors.textSecondary,
+    fontSize: 12,
   },
   passwordHint: {
     fontSize: 12,

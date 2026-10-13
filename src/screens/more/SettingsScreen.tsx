@@ -162,6 +162,22 @@ export default function SettingsScreen({ navigation }: Props) {
         </View>
 
         <Text style={styles.sectionHeading}>PREFERENCES</Text>
+        <TouchableOpacity
+          style={[styles.card, styles.legalCard]}
+          activeOpacity={0.75}
+          onPress={() => navigation.navigate('AccountCapabilities')}
+        >
+          <View style={styles.row}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="options-outline" size={18} color={colors.primarySoft} />
+            </View>
+            <View style={styles.rowText}>
+              <Text style={styles.rowTitle}>Account capabilities</Text>
+              <Text style={styles.rowSubtitle}>Choose investing, borrowing, or both</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </View>
+        </TouchableOpacity>
         <View style={styles.card}>
           <View style={styles.row}>
             <View style={styles.iconCircle}>

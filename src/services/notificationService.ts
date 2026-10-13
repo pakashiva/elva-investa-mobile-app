@@ -3,14 +3,15 @@ import { apiRequest } from '../lib/api';
 export type NotificationKind =
   | 'investment'
   | 'withdrawal'
-  | 'agreement_renewal';
+  | 'agreement_renewal'
+  | 'loan';
 
 export type InvestorNotification = {
   id: string;
   kind: NotificationKind;
   title: string;
   body: string;
-  decision: 'approved' | 'rejected';
+  decision: 'approved' | 'rejected' | 'recorded' | 'due' | 'overdue';
   referenceId: string | null;
   isRead: boolean;
   createdAt: string;
@@ -33,6 +34,7 @@ type NotificationRow = {
 export function mapNotificationKind(kind: string): NotificationKind {
   if (kind === 'withdrawal') return 'withdrawal';
   if (kind === 'agreement_renewal') return 'agreement_renewal';
+  if (kind === 'loan') return 'loan';
   return 'investment';
 }
 
@@ -42,7 +44,7 @@ function mapRow(row: NotificationRow): InvestorNotification {
     kind: mapNotificationKind(row.kind),
     title: row.title,
     body: row.body,
-    decision: row.decision === 'rejected' ? 'rejected' : 'approved',
+    decision: (['approved', 'rejected', 'recorded', 'due', 'overdue'].includes(row.decision) ? row.decision : 'approved') as InvestorNotification['decision'],
     referenceId: row.referenceId ?? row.reference_id ?? null,
     isRead: Boolean(row.isRead ?? row.is_read),
     createdAt: String(row.createdAt ?? row.created_at ?? ''),

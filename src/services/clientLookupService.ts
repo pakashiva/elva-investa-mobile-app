@@ -3,6 +3,8 @@ import { apiRequest } from '../lib/api';
 export type ClientLookup = {
   name: string;
   clientCode: string;
+  enabledModules: ('invest' | 'borrow')[];
+  requiredBorrowerDocuments: string[];
 };
 
 export async function lookupClientCode(code: string): Promise<ClientLookup> {

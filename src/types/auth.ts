@@ -9,6 +9,9 @@ export type CustomerPayload = {
   clientName: string;
   clientCode: string;
   mobileVerified: boolean;
+  enabledModules?: string[];
+  customerType?: 'investor' | 'borrower' | 'both' | string;
+  hasBorrowerAccount?: boolean;
 };
 
 export type AppSession = {

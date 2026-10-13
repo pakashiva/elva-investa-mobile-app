@@ -17,6 +17,12 @@ export type WithdrawalsStackParamList = {
   WithdrawalDetails: { withdrawalId: string };
 };
 
+export type BorrowingStackParamList = {
+  BorrowingHome: undefined;
+  BorrowingLoanDetails: { loanId: string };
+  LoanRequest: undefined;
+};
+
 export type MoreStackParamList = {
   Menu: undefined;
   MyBankAccounts: undefined;
@@ -28,6 +34,7 @@ export type MoreStackParamList = {
   ReferEarn: undefined;
   MyProfile: undefined;
   Settings: undefined;
+  AccountCapabilities: undefined;
   LegalDocument: { documentId: 'terms' | 'privacy' | 'about' };
   Transactions: undefined;
   FAQ: undefined;
@@ -38,6 +45,7 @@ export type MainTabParamList = {
   Home: undefined;
   AddFunds: NavigatorScreenParams<AddFundsStackParamList>;
   Withdrawals: NavigatorScreenParams<WithdrawalsStackParamList>;
+  Borrowing: NavigatorScreenParams<BorrowingStackParamList>;
   More: NavigatorScreenParams<MoreStackParamList>;
 };
 
@@ -69,6 +77,12 @@ export type WithdrawalsStackScreenProps<
   NativeStackScreenProps<WithdrawalsStackParamList, T>,
   BottomTabScreenProps<MainTabParamList>
 >;
+
+export type BorrowingStackScreenProps<T extends keyof BorrowingStackParamList> =
+  CompositeScreenProps<
+    NativeStackScreenProps<BorrowingStackParamList, T>,
+    BottomTabScreenProps<MainTabParamList>
+  >;
 
 export type MoreStackScreenProps<T extends keyof MoreStackParamList> =
   CompositeScreenProps<

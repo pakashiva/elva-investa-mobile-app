@@ -5,12 +5,9 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 
-const TABS = [
-  { key: 'Home', label: 'Home' },
-  { key: 'AddFunds', label: 'Add Funds' },
-  { key: 'Withdrawals', label: 'Withdrawals' },
-  { key: 'More', label: 'More' },
-] as const;
+const TAB_LABELS: Record<string, string> = {
+  Home: 'Home', AddFunds: 'Invest', Withdrawals: 'Withdrawals', Borrowing: 'Borrow', More: 'More',
+};
 
 export default function BottomTabBar({
   state,
@@ -25,7 +22,8 @@ export default function BottomTabBar({
         { paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 20 : 10) },
       ]}
     >
-      {TABS.map((tab, index) => {
+      {state.routes.map((route, index) => {
+        const tab = { key: route.name, label: TAB_LABELS[route.name] ?? route.name };
         const isFocused = state.index === index;
         const color = isFocused ? colors.primarySoft : colors.tabInactive;
 
@@ -93,6 +91,9 @@ export default function BottomTabBar({
                   color={isFocused ? '#FFF' : color}
                 />
               </View>
+            )}
+            {tab.key === 'Borrowing' && (
+              <Ionicons name="business-outline" size={22} color={color} />
             )}
             {tab.key === 'More' && (
               <Ionicons name="menu" size={22} color={color} />
