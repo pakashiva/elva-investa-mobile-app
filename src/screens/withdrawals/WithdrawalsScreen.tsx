@@ -13,6 +13,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import WithdrawalCard from '../../components/WithdrawalCard';
+import InvestSectionSwitch from '../../components/InvestSectionSwitch';
 import ProfileAvatar from '../../components/ProfileAvatar';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotificationBell } from '../../hooks/useNotificationBell';
@@ -22,14 +23,14 @@ import {
 } from '../../services/withdrawalService';
 import { isMissingTableError } from '../../utils/supabaseErrors';
 import { WithdrawalRequest } from '../../types/withdrawal';
-import { WithdrawalsStackParamList } from '../../navigation/types';
+import { AddFundsStackParamList } from '../../navigation/types';
 import { colors, spacing } from '../../theme/colors';
 import { DEFAULT_PROFILE_AVATAR } from '../../constants/brandAssets';
 
 const avatarSource = DEFAULT_PROFILE_AVATAR;
 
 type Nav = NativeStackNavigationProp<
-  WithdrawalsStackParamList,
+  AddFundsStackParamList,
   'WithdrawalsList'
 >;
 
@@ -178,6 +179,8 @@ export default function WithdrawalsScreen() {
                 />
               </View>
             </View>
+
+            <InvestSectionSwitch active="withdrawals" onInvestments={() => navigation.navigate('MyInvestments')} onWithdrawals={() => navigation.navigate('WithdrawalsList')} />
 
             <TouchableOpacity
               style={styles.newBtn}

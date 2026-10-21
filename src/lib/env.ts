@@ -41,6 +41,18 @@ function isIpv4(host: string): boolean {
   return /^\d{1,3}(?:\.\d{1,3}){3}$/.test(host);
 }
 
+function isPrivateIpv4(host: string): boolean {
+  const parts = host.split('.').map(Number);
+  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return false;
+  return parts[0] === 10 ||
+    (parts[0] === 192 && parts[1] === 168) ||
+    (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31);
+}
+
+function hostFromUrl(url: string): string {
+  return url.replace(/^https?:\/\//, '').split('/')[0].split(':')[0].trim().toLowerCase();
+}
+
 function isLoopbackHost(url: string): boolean {
   const host = url
     .replace(/^https?:\/\//, '')
@@ -64,6 +76,18 @@ export function getApiBaseUrl(): string {
   const configured =
     readEnv('EXPO_PUBLIC_API_URL') ?? extra.apiBaseUrl?.trim();
   const lanHost = lanHostFromExpo();
+
+  // In Expo Web development, the browser and API run on the same computer.
+  // The mobile .env often contains the computer's LAN IP for physical phones;
+  // loop back locally in the browser instead of sending requests to that IP.
+  if (Platform.OS === 'web') {
+    if (!configured) return 'http://127.0.0.1:4000';
+    const base = stripTrailingSlash(configured);
+    if (process.env.NODE_ENV !== 'production' && isPrivateIpv4(hostFromUrl(base))) {
+      return 'http://127.0.0.1:4000';
+    }
+    return base;
+  }
 
   if (configured) {
     const base = stripTrailingSlash(configured);

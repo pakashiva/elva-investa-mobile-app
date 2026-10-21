@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 
 const TAB_LABELS: Record<string, string> = {
-  Home: 'Home', AddFunds: 'Invest', Withdrawals: 'Withdrawals', Borrowing: 'Borrow', More: 'More',
+  Home: 'Home', AddFunds: 'Invest', Borrowing: 'Borrow', More: 'More',
 };
 
 export default function BottomTabBar({
@@ -74,22 +74,7 @@ export default function BottomTabBar({
                   { borderColor: color },
                 ]}
               >
-                <Ionicons name="add" size={16} color={isFocused ? '#FFF' : color} />
-              </View>
-            )}
-            {tab.key === 'Withdrawals' && (
-              <View
-                style={[
-                  styles.tabIconCircle,
-                  isFocused && styles.tabIconCircleActive,
-                  { borderColor: color },
-                ]}
-              >
-                <Feather
-                  name="arrow-up"
-                  size={14}
-                  color={isFocused ? '#FFF' : color}
-                />
+                <Ionicons name="trending-up" size={14} color={isFocused ? '#FFF' : color} />
               </View>
             )}
             {tab.key === 'Borrowing' && (

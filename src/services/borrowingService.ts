@@ -8,6 +8,10 @@ export type BorrowLoan = {
   interest_model: string; interest_rate_period: string; repayment_model: string;
   repayment_frequency: string; grace_period_days: number; required_documents: string[];
   receipt_required: boolean;
+  request_type?: 'standard' | 'custom';
+  custom_duration_days?: number | null;
+  repayment_preference?: 'maturity' | 'flexible' | null;
+  counter_offer?: { principal_amount: number; interest_rate_percent: number; duration_days: number; repayment_preference: 'maturity' | 'flexible'; total_repayment: number } | null;
 };
 
 export type BorrowScheduleRow = {
@@ -183,4 +187,12 @@ export async function submitLoanRequest(input: {
     '/api/mobile/borrowing/requests',
     { method: 'POST', body: JSON.stringify(input) }
   );
+}
+
+export async function submitCustomLoanRequest(input: { principalAmount: number; durationDays: number; requestedInterestRatePercent: number|null; repaymentPreference: 'maturity' | 'flexible'; purpose: string; notes: string; submissionKey: string }) {
+  return apiRequest<{ loanId: string; loanNumber: string; status: string }>('/api/mobile/borrowing/requests', { method: 'POST', body: JSON.stringify({ ...input, requestType: 'custom' }) });
+}
+
+export async function respondToCustomOffer(loanId: string, accept: boolean) {
+  return apiRequest<{ status: string }>(`/api/mobile/borrowing/requests/${encodeURIComponent(loanId)}/offer-response`, { method: 'PATCH', body: JSON.stringify({ accept }) });
 }

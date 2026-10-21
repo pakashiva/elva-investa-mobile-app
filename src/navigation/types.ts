@@ -9,13 +9,14 @@ export type AddFundsStackParamList = {
   MyInvestments: undefined;
   NewFundRequest: undefined;
   InvestmentDetails: { investmentId: string };
-};
-
-export type WithdrawalsStackParamList = {
   WithdrawalsList: undefined;
   CreateWithdrawalRequest: undefined;
   WithdrawalDetails: { withdrawalId: string };
 };
+
+/** @deprecated Withdrawal routes now live in the shared Invest tab stack. */
+export type WithdrawalsStackParamList = Pick<AddFundsStackParamList,
+  'WithdrawalsList' | 'CreateWithdrawalRequest' | 'WithdrawalDetails'>;
 
 export type BorrowingStackParamList = {
   BorrowingHome: undefined;
@@ -44,7 +45,6 @@ export type MoreStackParamList = {
 export type MainTabParamList = {
   Home: undefined;
   AddFunds: NavigatorScreenParams<AddFundsStackParamList>;
-  Withdrawals: NavigatorScreenParams<WithdrawalsStackParamList>;
   Borrowing: NavigatorScreenParams<BorrowingStackParamList>;
   More: NavigatorScreenParams<MoreStackParamList>;
 };
@@ -70,13 +70,6 @@ export type AddFundsStackScreenProps<T extends keyof AddFundsStackParamList> =
     NativeStackScreenProps<AddFundsStackParamList, T>,
     BottomTabScreenProps<MainTabParamList>
   >;
-
-export type WithdrawalsStackScreenProps<
-  T extends keyof WithdrawalsStackParamList,
-> = CompositeScreenProps<
-  NativeStackScreenProps<WithdrawalsStackParamList, T>,
-  BottomTabScreenProps<MainTabParamList>
->;
 
 export type BorrowingStackScreenProps<T extends keyof BorrowingStackParamList> =
   CompositeScreenProps<

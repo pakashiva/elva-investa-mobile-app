@@ -28,7 +28,7 @@ import {
   createWithdrawalRequest,
   getRequestedDateLabel,
 } from '../../services/withdrawalService';
-import { WithdrawalsStackScreenProps } from '../../navigation/types';
+import { AddFundsStackScreenProps } from '../../navigation/types';
 import { formatInrPlain, parseInrInput } from '../../utils/currency';
 import {
   isMissingTableError,
@@ -48,7 +48,7 @@ type FundOption = {
   hasOpenFullWithdrawal: boolean;
 };
 
-type Props = WithdrawalsStackScreenProps<'CreateWithdrawalRequest'>;
+type Props = AddFundsStackScreenProps<'CreateWithdrawalRequest'>;
 
 export default function CreateWithdrawalRequestScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();

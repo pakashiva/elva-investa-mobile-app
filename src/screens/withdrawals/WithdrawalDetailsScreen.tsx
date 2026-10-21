@@ -12,10 +12,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { getWithdrawalByIdForUser } from '../../services/withdrawalService';
 import { WithdrawalRequest } from '../../types/withdrawal';
-import { WithdrawalsStackScreenProps } from '../../navigation/types';
+import { AddFundsStackScreenProps } from '../../navigation/types';
 import { colors, spacing } from '../../theme/colors';
 
-type Props = WithdrawalsStackScreenProps<'WithdrawalDetails'>;
+type Props = AddFundsStackScreenProps<'WithdrawalDetails'>;
 
 export default function WithdrawalDetailsScreen({ navigation, route }: Props) {
   const insets = useSafeAreaInsets();

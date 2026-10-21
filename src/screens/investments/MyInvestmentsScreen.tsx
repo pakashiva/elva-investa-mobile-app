@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FilterChips from '../../components/FilterChips';
 import InvestmentCard from '../../components/InvestmentCard';
+import InvestSectionSwitch from '../../components/InvestSectionSwitch';
 import ProfileAvatar from '../../components/ProfileAvatar';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotificationBell } from '../../hooks/useNotificationBell';
@@ -133,6 +134,8 @@ export default function MyInvestmentsScreen() {
                 />
               </View>
             </View>
+
+            <InvestSectionSwitch active="investments" onInvestments={() => navigation.navigate('MyInvestments')} onWithdrawals={() => navigation.navigate('WithdrawalsList')} />
 
             <View style={styles.filters}>
               <FilterChips

@@ -1,5 +1,6 @@
 import { getApiBaseUrl } from './env';
 import { getStoredToken } from '../services/sessionStore';
+import { Platform } from 'react-native';
 
 export class ApiError extends Error {
   status: number;
@@ -56,8 +57,11 @@ export async function apiRequest<T>(
     });
   } catch (error) {
     const cause = error instanceof Error ? ` (${error.message})` : '';
+    const troubleshooting = Platform.OS === 'web'
+      ? ' Start the ELVA CAPITA API from the admin portal with `npm run dev:api` (port 4000).'
+      : ' Confirm the phone and computer share Wi-Fi, the API is running, and TCP port 4000 is allowed.';
     throw new Error(
-      `Cannot reach ELVA CAPITA at ${url}${cause}. Confirm the phone and computer share Wi-Fi, the API is running, and TCP port 4000 is allowed.`
+      `Cannot reach ELVA CAPITA at ${url}${cause}.${troubleshooting}`
     );
   }
 

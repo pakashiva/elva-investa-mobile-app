@@ -59,7 +59,7 @@ export function getBorrowingMetrics(snapshot: BorrowingSnapshot, today = todayIn
   }
   return {
     activeCount: active.length,
-    awaitingCount: snapshot.loans.filter((loan) => ['pending_approval', 'approved'].includes(loan.status)).length,
+    awaitingCount: snapshot.loans.filter((loan) => ['pending_approval', 'pending_customer_acceptance', 'approved'].includes(loan.status)).length,
     outstandingPrincipal: Math.max(0, outstandingPrincipal),
     interestDue: Math.max(0, interestDue),
     overdueAmount: Math.max(0, overdueAmount),
@@ -105,7 +105,7 @@ export default function BorrowingDashboardScreen({ navigation }: Props) {
           {snapshot.loans.length ? snapshot.loans.map((loan) => {
             const remainingPrincipal = Math.max(0, snapshot.ledger.filter((row) => row.loan_id === loan.id).reduce((sum, row) => sum + num(row.principal_debit) - num(row.principal_credit), 0));
             return <TouchableOpacity key={loan.id} style={styles.loanCard} activeOpacity={0.76} onPress={() => navigation.navigate('BorrowingLoanDetails', { loanId: loan.id })}>
-              <View style={styles.loanTitleRow}><View style={styles.loanIcon}><Ionicons name="business-outline" size={19} color={colors.primarySoft} /></View><View style={{ flex: 1 }}><Text style={styles.loanName}>{loan.product_name}</Text><Text style={styles.loanCode}>{loan.loan_number}</Text></View><View style={[styles.statusPill, statusColor(loan.status)]}><Text style={[styles.statusText, statusTextColor(loan.status)]}>{loan.status.replaceAll('_', ' ')}</Text></View></View>
+              <View style={styles.loanTitleRow}><View style={styles.loanIcon}><Ionicons name="business-outline" size={19} color={colors.primarySoft} /></View><View style={{ flex: 1 }}><Text style={styles.loanName}>{loan.request_type==='custom'?'Custom loan':loan.product_name}</Text><Text style={styles.loanCode}>{loan.loan_number}{loan.request_type==='custom'?` · ${loan.custom_duration_days||loan.terms_snapshot.custom_duration_days} days`:''}</Text></View><View style={[styles.statusPill, statusColor(loan.status)]}><Text style={[styles.statusText, statusTextColor(loan.status)]}>{loan.status.replaceAll('_', ' ')}</Text></View></View>
               <View style={styles.loanBottom}><View><Text style={styles.cardHint}>Requested / original amount</Text><Text style={styles.cardValue}>{formatInr(num(loan.principal_amount))}</Text></View><View style={{ alignItems: 'flex-end' }}><Text style={styles.cardHint}>Principal outstanding</Text><Text style={styles.cardValue}>{formatInr(remainingPrincipal)}</Text></View></View>
               <View style={styles.viewDetails}><Text style={styles.viewDetailsText}>View loan details</Text><Ionicons name="chevron-forward" size={16} color={colors.primarySoft} /></View>
             </TouchableOpacity>;
